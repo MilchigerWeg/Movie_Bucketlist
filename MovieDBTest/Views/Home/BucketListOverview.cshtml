@@ -1,0 +1,36 @@
+﻿@model MovieDBTest.Models.BucketListOverviewViewModel
+@{
+    ViewData["Title"] = "BucketListOverview";
+}
+
+<h1>All Bucketlists</h1>
+
+<div class="container">
+    @foreach (var bucketlist in Model.userBucketLists)
+    {
+        <div class="row">            
+            <div class="col-7">
+                <a href="/Home/BucketList?id=@bucketlist.ListId">
+                    @bucketlist.BucketListName
+                </a>
+            </div>
+            <div class="col-5">
+                <div class="row">
+                    <div>
+                        @foreach (var user in bucketlist.InvolvedUser.Take(3))
+                        {
+                            @(user.Name + ", ")
+                        }
+                        @if (bucketlist.InvolvedUser.Count > 3) {
+                            @("...")
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<a href="/Home/EditBucketList">
+    <input class="submitButton" type="button" value="Create Bucketlist" />
+</a>

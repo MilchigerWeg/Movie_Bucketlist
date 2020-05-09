@@ -1,0 +1,29 @@
+﻿.editRowImage {
+    max-height: 110px;
+}
+
+.editRow{
+    padding: 5px;
+    border-top-style: solid;
+    border-top-color: black;
+    border-top-width: 1px;
+}
+
+.movieDetailPoster {
+    margin-top: 5px;
+    margin-right: 20px;
+    float: left;
+    max-width:40%;
+}
+
+.movieDetailPoster img{
+    max-width: 100%;
+}
+
+.movieTitle{
+    margin-bottom: 10px;
+}
+
+.seenMovie{
+    opacity: 0.5;
+}

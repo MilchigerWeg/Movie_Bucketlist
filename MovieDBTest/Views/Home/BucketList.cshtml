@@ -1,0 +1,23 @@
+﻿@model MovieDBTest.Models.BucketListViewModel
+
+@{
+    ViewData["Title"] = "AllMovies";
+}
+
+<h1>@Model.Name</h1>
+
+@foreach(var movie in Model.Movies)
+{
+    <div class="movieCard" id="@movie.movieDetails.imdbID">
+        <a href="/Home/MovieDetail?objectID=@movie.movieDetails.Id&bucketListId=@Model.ListId.ToString()">
+            <label class="btn-container btn-container-bucketlist">
+                &nbsp;
+                <input type="checkbox"  @(Model.SignedInUser.MoviesWatchedIds.Contains(movie.movieDetails.Id) ? "checked" : "") @( "onclick=WatchedBoxClick(\'" + movie.movieDetails.Id + "\',$(this)); ") />
+                <span class="checkmark"></span>
+            </label>
+            <img class="posterImg @(movie.InvolvedUsers.All(u => u.MoviesWatchedIds.Contains(movie.movieDetails.Id)) ? "seenMovie" : "") " loading="lazy" src="@movie.movieDetails.Poster" />
+            <div class="movieTitle">@movie.movieDetails.Title</div>
+
+        </a>
+    </div>
+}

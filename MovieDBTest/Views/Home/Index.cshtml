@@ -1,0 +1,20 @@
+﻿@model MovieDBTest.Models.UserLoginViewModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="loginBox">
+
+    <form asp-controller="Home" asp-action="Index" method="post">
+        <input class="userInput" type="text" placeholder="Username" required="required" asp-for="@Model.User.Name" />
+        <br />
+        <input class="userInput" type="password" placeholder="Password" required="required" asp-for="@Model.User.Password" />
+        <br />
+        <input class="submitButton" type="submit" value="Sign In"/>
+    </form>
+
+    <div>@Model.NonTechnicalError.Info</div>
+</div>
+<a href="/Home/CreateUser">
+    <input class="submitButton" type="button" value="Create User" href="/Home/CreateUser" />
+</a>

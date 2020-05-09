@@ -1,0 +1,13 @@
+﻿@model MovieDBTest.Models.MovieModel
+
+<div class="row editRow justify-content-center d-flex align-items-center" id="@Model.imdbID" name="MovieModel">
+    <div class="col-3">
+        <img class="editRowImage" loading="lazy" src="@Model.Poster" />
+    </div>
+    <div class="col-5 ">
+        @Model.Title (@Model.Year)
+    </div>
+    <div class="col-4">
+        <input class="submitButton" type="button" value="Remove" name="RemoveMovieButton" />
+    </div>
+</div>

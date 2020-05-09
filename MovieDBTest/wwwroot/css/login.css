@@ -1,0 +1,22 @@
+﻿.loginBox {
+    display: block;
+    border-style: solid;
+    border-color: black;
+    border-radius: 25px;
+
+    width: 50%;
+    min-width: 200px;
+    margin: auto;
+    padding: 10px;
+
+    text-align: center;
+}
+
+.userInput {
+    margin: 5px;
+    width: 50%;
+}
+
+.submitButton {
+    border-radius: 10px;
+}

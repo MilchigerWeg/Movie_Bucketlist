@@ -1,0 +1,29 @@
+﻿@model MovieDBTest.Models.MovieViewModel
+
+@{
+    ViewData["Title"] = "MovieDetail";
+}
+
+<h1 class="movieTitle">@Model.movieDetails.Title (@Model.movieDetails.Year)</h1>
+<div class="clearfix">
+    <div class="movieDetailPoster">
+        <img src="@Model.movieDetails.Poster" />
+    </div>
+
+    <div><b>Genre:</b> @Model.movieDetails.Genre</div>
+    <div><b>Runtime:</b> @Model.movieDetails.Runtime</div>
+    <div><b>Rating:</b> @Model.movieDetails.Rated</div>
+    <div><b>Director:</b> @Model.movieDetails.Director</div>
+    <div><b>Actors:</b> @Model.movieDetails.Actors</div>
+    <div><b>Plot:</b> @Model.movieDetails.Plot</div>
+
+</div>
+
+@foreach (var user in Model.InvolvedUsers)
+{
+    <label class="btn-container">
+        @user.Name
+        <input type="checkbox" @(user.MoviesWatchedIds.Contains(Model.movieDetails.Id) ? "checked" : "") @(user.Id == Model.SignedInUser.Id ? "onclick=WatchedBoxClick(\'" + Model.movieDetails.Id + "\',$(this)); " : "disabled ")>
+        <span class="checkmark"></span>
+    </label>        
+}

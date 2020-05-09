@@ -1,0 +1,50 @@
+﻿@model MovieDBTest.Models.BucketListCreateModel
+
+@{
+    ViewData["Title"] = "EditBucketList";
+}
+
+<h1><input type="text" value="@Model.Name" placeholder="Titel" id="ListTitle"></h1>
+
+
+<input type="button" value="Save" id="SaveButton"/>
+
+<div>
+    <p>Add User</p>
+    <input type="text" placeholder="Username" id="AddUserNameText">
+    <input type="submit" value="Add" id="AddUserButton">
+
+    <div id="UserError" class="hide">
+        User existiert nicht
+    </div>
+
+    <div id="UsersInBucketList">
+        @foreach (var user in Model.UsersInBucketList)
+        {
+            <div name="singleUser" id="@user.Id">
+                <p>@user.Name</p> 
+                @if (user != Model.SignedInUser)
+                { 
+                    <input type="button" value="Remove" name="DeleteButton">
+                }
+            </div>
+        }
+    </div>
+</div>
+
+
+<div>
+    <input type="text" placeholder="Movie Title" id="AddMovieTitleText">
+    <input type="submit" value="Add" id="AddMovieTitleButton">
+</div>
+
+<div id="MovieList">
+    @if (Model != null && Model.Movies != null && Model.Movies.Any())
+    {
+        @foreach (var movie in Model.Movies.OrderBy(m => m.movieDetails.Title))
+        {
+            @await Html.PartialAsync("~/Views/Interaction/MovieModelPartial.cshtml", movie.movieDetails)
+        }
+    }
+</div>
+<input type="hidden" id="ListId" value="@Model.ListId"/>
