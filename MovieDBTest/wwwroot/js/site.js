@@ -122,12 +122,10 @@ var saveBucketList = function () {
             //Wenn leerer String zurück kommt -> Film nicht gefunden 
             if (data != "") {
                 //partial View oben anfügen 
-                $("#MovieList").prepend(data);
-                $("[name='RemoveMovieButton']").click(removeMovie);
+                $("#ListId").val(data);
             }
             else {
-                //kein Film -> fehlermeldung zeigen
-                alert("Error");
+                alert("Error on saving");
             }
         },
         //Bei technischem Fehler -> billige Meldung

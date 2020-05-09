@@ -149,7 +149,7 @@ namespace MovieDBTest.Controllers
                 dbProvider.RemoveBucketListFromUser(userId, bucketlistId);
             }
 
-            return StatusCode(202);
+            return StatusCode(202, bucketlistId.ToString());
         }
     }
 }
