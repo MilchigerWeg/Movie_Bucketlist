@@ -90,13 +90,7 @@ namespace MovieDBTest.Controllers
             {
                 RefreshCookieSession();
             }
-
-            //wenn nur eine bucketlist angelegt -> weiterleiten
-            if(signedInUser.BucketListsInvolvedIn.Count == 1)
-            {
-                return Redirect("BucketList?id=" + signedInUser.BucketListsInvolvedIn.First());
-            }
-
+            
             var bucketListModel = new Provider.BucketListProvider().GetBucketListOverviewViewModel(signedInUser);
 
             return View("BucketListOverview", bucketListModel);
