@@ -13,16 +13,20 @@ namespace MovieDBTest.Provider
     {
         static MongoClient client = new MongoClient(Const.MongoDbConst.ConnectionString);
        
-        public T GetByObjectId<T>(ObjectId id, string collectionName)
+        private IMongoCollection<T> GetCollection<T>(string collectionName)
         {
             IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
             //Collection aller Filme auswählen
-            IMongoCollection<BsonDocument> collection = db.GetCollection<BsonDocument>(collectionName);
+            IMongoCollection<T> collection = db.GetCollection<T>(collectionName);
 
+            return collection;
+        }
+               
+        public T GetByObjectId<T>(ObjectId id, string collectionName)
+        {
+            var collection = GetCollection<BsonDocument>(collectionName);
 
             var filter = new FilterDefinitionBuilder<BsonDocument>().Eq("_id", id);
-
             var result = collection.FindSync(filter).FirstOrDefault();
 
             if(result == null)
@@ -37,54 +41,65 @@ namespace MovieDBTest.Provider
 
         public async Task AddAsync<T>(T newInstance, string collectionName)
         {
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<BsonDocument> collection = db.GetCollection<BsonDocument>(collectionName);
+            var collection = GetCollection<BsonDocument>(collectionName);
 
             await collection.InsertOneAsync(newInstance.ToBsonDocument());
         }
 
         public async Task ReplaceBucketList(BucketList updatedBucketList)
         {
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
+            var collection = GetCollection<BucketList>(Const.MongoDbConst.CollectionBucketList);
+         
             var filter = Builders<BucketList>.Filter.Eq(s => s.ListId, updatedBucketList.ListId);
-            IMongoCollection<BucketList> collection = db.GetCollection<BucketList>(Const.MongoDbConst.CollectionBucketList);
+
             await collection.ReplaceOneAsync(filter, updatedBucketList);            
         }
 
         public BucketList GetBucketList(ObjectId id)
         {
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<BsonDocument> collection = db.GetCollection<BsonDocument>(Const.MongoDbConst.CollectionBucketList);
-
+            var collection = GetCollection<BsonDocument>(Const.MongoDbConst.CollectionBucketList);
 
             var filter = new FilterDefinitionBuilder<BsonDocument>().Eq("_id", id);
-            var bucketList = BsonSerializer.Deserialize<BucketList>(collection.FindSync(filter).FirstOrDefault());
+
+            var result = collection.FindSync(filter).FirstOrDefault();
+
+            if (result == null)
+            {
+                return null;
+            }
+
+            var bucketList = BsonSerializer.Deserialize<BucketList>(result);
 
             return bucketList;
         }
 
         public List<MovieModel> GetBucketListMovies(ObjectId id)
         {
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<BsonDocument> bucketlistCollection = db.GetCollection<BsonDocument>(Const.MongoDbConst.CollectionBucketList);
-
+            var movies = new List<MovieModel>();
+            
+            var bucketlistCollection = GetCollection<BsonDocument>(Const.MongoDbConst.CollectionBucketList);
+            var movieCollection = GetCollection<BsonDocument>(Const.MongoDbConst.CollectionMovies);
 
             var filter = new FilterDefinitionBuilder<BsonDocument>().Eq("_id", id);
-            var bucketList = BsonSerializer.Deserialize<BucketList>(bucketlistCollection.FindSync(filter).FirstOrDefault());
 
-            var movies = new List<MovieModel>();
-            IMongoCollection<BsonDocument> movieCollection = db.GetCollection<BsonDocument>(Const.MongoDbConst.CollectionMovies);
+            var bucketlistResult = bucketlistCollection.FindSync(filter).FirstOrDefault();
+
+            if(bucketlistResult == null)
+            {
+                return null;
+            }
+
+            var bucketList = BsonSerializer.Deserialize<BucketList>(bucketlistResult);
+
 
             foreach (var movie in bucketList.MoviesToWatchIds)
             {
-                movies.Add(GetByObjectId<MovieModel>(movie, Const.MongoDbConst.CollectionMovies));
+                var tmpMovie = GetByObjectId<MovieModel>(movie, Const.MongoDbConst.CollectionMovies);
+
+                if (tmpMovie != null)
+                {
+                    movies.Add(tmpMovie);
+                }
             }
 
             return movies;
@@ -93,13 +108,23 @@ namespace MovieDBTest.Provider
         public List<User> GetUsersFromBucketList(ObjectId bucketListId)
         {
             var bucketList = GetBucketList(bucketListId);
+
+            if(bucketList == null)
+            {
+                return null;
+            }
+
             var users = new List<User>();
 
             foreach(var userId in bucketList.UsersInListId)
             {
                 var newUser = new User();
                 newUser = GetByObjectId<User>(userId, Const.MongoDbConst.CollectionUsers);
-                users.Add(newUser);
+
+                if (newUser != null)
+                {
+                    users.Add(newUser);
+                }
             }
 
             return users;
@@ -115,11 +140,7 @@ namespace MovieDBTest.Provider
                 return;
             }
 
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<User> collection = db.GetCollection<User>(Const.MongoDbConst.CollectionUsers);
-
+            var collection = GetCollection<User>(Const.MongoDbConst.CollectionUsers);
 
             var filter = new FilterDefinitionBuilder<User>().Eq("_id", userId);
             var update = Builders<User>.Update.Push<ObjectId>(u => u.MoviesWatchedIds, movieId);
@@ -137,11 +158,7 @@ namespace MovieDBTest.Provider
                 return;
             }
 
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<User> collection = db.GetCollection<User>(Const.MongoDbConst.CollectionUsers);
-
+            var collection = GetCollection<User>(Const.MongoDbConst.CollectionUsers);
 
             //var filter = new FilterDefinitionBuilder<User>().Eq("_id", userId);
             var update = Builders<User>.Update.Pull(u => u.MoviesWatchedIds, movieId);
@@ -151,11 +168,7 @@ namespace MovieDBTest.Provider
 
         public User GetUser(string userName)
         {
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<BsonDocument> collection = db.GetCollection<BsonDocument>(Const.MongoDbConst.CollectionUsers);
-
+            var collection = GetCollection<BsonDocument>(Const.MongoDbConst.CollectionUsers);
 
             var filter = new FilterDefinitionBuilder<BsonDocument>().Eq("name", userName);
             var userDocument = collection.FindSync(filter).FirstOrDefault();
@@ -172,15 +185,11 @@ namespace MovieDBTest.Provider
         
         public MovieModel GetMovieByImdbId(string imdbId)
         {
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<BsonDocument> collection = db.GetCollection<BsonDocument>(Const.MongoDbConst.CollectionMovies);
-
+            var collection = GetCollection<BsonDocument>(Const.MongoDbConst.CollectionMovies);
 
             var filter = new FilterDefinitionBuilder<BsonDocument>().Eq("imdbID", imdbId);
-
             var result = collection.FindSync(filter).FirstOrDefault();
+
             if (result == null)
             {
                 return null;
@@ -201,11 +210,7 @@ namespace MovieDBTest.Provider
                 return;
             }
 
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
-
-            //Collection aller Filme auswählen
-            IMongoCollection<User> collection = db.GetCollection<User>(Const.MongoDbConst.CollectionUsers);
-
+            var collection = GetCollection<User>(Const.MongoDbConst.CollectionUsers);
 
             var filter = new FilterDefinitionBuilder<User>().Eq("_id", userId);
             var update = Builders<User>.Update.Push<ObjectId>(u => u.BucketListsInvolvedIn, bucketListId);
@@ -223,13 +228,8 @@ namespace MovieDBTest.Provider
                 return;
             }
 
-            IMongoDatabase db = client.GetDatabase(Const.MongoDbConst.DbName);
+            var collection = GetCollection<User>(Const.MongoDbConst.CollectionUsers);
 
-            //Collection aller Filme auswählen
-            IMongoCollection<User> collection = db.GetCollection<User>(Const.MongoDbConst.CollectionUsers);
-
-
-            //var filter = new FilterDefinitionBuilder<User>().Eq("_id", userId);
             var update = Builders<User>.Update.Pull(u => u.BucketListsInvolvedIn, bucketListId);
 
             collection.FindOneAndUpdateAsync(u => u.Id == userId, update).Wait();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using MovieDBTest.Models;
 
 namespace MovieDBTest.Controllers
@@ -66,6 +67,7 @@ namespace MovieDBTest.Controllers
             var movProvider = new Provider.MovieDetailProvider();
             BucketList bucketListToSave;
             List<User> existingUsers = new List<User>();
+            List<ObjectId> previousUsers = new List<ObjectId>();
             bool isNewList = saveModel.ListId.All(s => s == '0');
 
             //ListId ist nur 0 -> neue id -> neue Liste
@@ -91,6 +93,9 @@ namespace MovieDBTest.Controllers
                 }
             }
 
+            //alle vorherigen nutzer merken -> müssen mit neuen abgeglichen werden und fehlende entfernen
+            previousUsers = new List<ObjectId>(bucketListToSave.UsersInListId);
+
             //Liste leer machen
             bucketListToSave.UsersInListId.Clear();
             //Alle Ids existierender User hinzufügen
@@ -107,21 +112,21 @@ namespace MovieDBTest.Controllers
                 if(tmpMovie == null)
                 {
                     //Film aus API lesen
-                    var movie = movProvider.GetMovieModelByImdbId(movieId);
+                    tmpMovie = movProvider.GetMovieModelByImdbId(movieId);
+                    //eigene Id setzen
+                    tmpMovie.Id = MongoDB.Bson.ObjectId.GenerateNewId();
                     //Film in eingener MongoDb ablegen
-                    dbProvider.AddAsync<MovieModel>(movie, Const.MongoDbConst.CollectionMovies).Wait();
-                    //Film wieder aus Db lesen, um Id zu bekommen (geht oft schief, wenn man ID selbst setzt)
-                    tmpMovie = dbProvider.GetMovieByImdbId(movieId);
+                    dbProvider.AddAsync<MovieModel>(tmpMovie, Const.MongoDbConst.CollectionMovies).Wait();
                 }
 
                 //Id wieder an Bucketlist anhängen
                 bucketListToSave.MoviesToWatchIds.Add(tmpMovie.Id);
             }
 
-            
-
             if (isNewList)
             {
+                //neue Id setzen für bucketlist
+                bucketListToSave.ListId = MongoDB.Bson.ObjectId.GenerateNewId();
                 //BucketList schreiben
                 dbProvider.AddAsync<BucketList>(bucketListToSave, Const.MongoDbConst.CollectionBucketList).Wait();
             }
@@ -130,9 +135,20 @@ namespace MovieDBTest.Controllers
                 dbProvider.ReplaceBucketList(bucketListToSave).Wait();
             }
 
-            //USer brauchen noch Bucketlist id
-            //Bucketlistid zurückgeben -> dann wird neue liste nicht immer als neue liste nach jedem save gewertet
-            
+            ObjectId bucketlistId = bucketListToSave.ListId;
+
+            //Allen Usern der Bucketlist diese zuweisen
+            foreach(var userId in bucketListToSave.UsersInListId)
+            {
+                dbProvider.AddBucketListToUser(userId, bucketlistId);
+            }
+
+            //alle User, die rausfliegen unhooken
+            foreach (var userId in bucketListToSave.UsersInListId.Where(u => !previousUsers.Contains(u)))
+            {
+                dbProvider.RemoveBucketListFromUser(userId, bucketlistId);
+            }
+
             return StatusCode(202);
         }
     }

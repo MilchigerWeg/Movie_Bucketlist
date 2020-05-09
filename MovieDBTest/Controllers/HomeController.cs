@@ -177,14 +177,12 @@ namespace MovieDBTest.Controllers
 
             if (!String.IsNullOrEmpty(listId))
             {
-                var viewModel = new Provider.BucketListProvider().GetBucketListViewModel(signedInUser, listId);
-
-                model.ListId = viewModel.ListId;
-                model.Movies = viewModel.Movies;
-                model.Name = viewModel.Name;            
+                model = new Provider.BucketListProvider().GetBucketListCreateModel(signedInUser, listId);
             }
-
-            model.UsersInBucketList.Add(signedInUser);
+            else
+            {
+                model.UsersInBucketList.Add(signedInUser);
+            }
 
             return View("EditBucketList", model);
         }

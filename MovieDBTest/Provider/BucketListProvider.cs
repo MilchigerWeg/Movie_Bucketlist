@@ -69,5 +69,41 @@ namespace MovieDBTest.Provider
 
             return bucketListViewModel;
         }
+
+        public BucketListCreateModel GetBucketListCreateModel(User signedInUser, string id)
+        {
+            var bucketListViewModel = new BucketListCreateModel();
+            //ObjectId holen
+            var bucketListId = new ObjectId(id);
+            var users = new List<User>();
+
+            var dbProvider = new MongoDbProvider();
+            var movProvider = new MovieDetailProvider();
+            //Bucketlist aus DB holen
+            var bucketList = dbProvider.GetBucketList(bucketListId);
+
+            var movieList = new List<MovieViewModel>();
+            //Zu allen Movies die genauen Details suchen
+            foreach (var movieId in bucketList.MoviesToWatchIds)
+            {
+                var movieDetails = movProvider.GetMovieViewModel(movieId, bucketListId, signedInUser);
+
+                movieList.Add(movieDetails);
+            }
+
+            foreach (var userId in bucketList.UsersInListId)
+            {
+                users.Add(dbProvider.GetByObjectId<User>(userId, Const.MongoDbConst.CollectionUsers));
+            }
+
+            //Name und Filme in Viewmodel setzen 
+            bucketListViewModel.Name = bucketList.Name;
+            bucketListViewModel.Movies = movieList;
+            bucketListViewModel.ListId = bucketListId;
+            bucketListViewModel.SignedInUser = signedInUser;
+            bucketListViewModel.UsersInBucketList = users;
+
+            return bucketListViewModel;
+        }
     }
 }
