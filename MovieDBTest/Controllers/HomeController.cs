@@ -203,6 +203,13 @@ namespace MovieDBTest.Controllers
 
             return View("MovieDetail", movieViewModel);
         }
+
+        public IActionResult SingOut()
+        {
+            this.SignOutFromSession();
+
+            return Redirect("Index");
+        }
                 
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
