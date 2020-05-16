@@ -340,4 +340,4 @@ ASALocalRun/
 healthchecksdb
 
 # Key-Konstanten
-Const/KeyConst.cs
+MovieDBTest/Const/KeyConst.cs
