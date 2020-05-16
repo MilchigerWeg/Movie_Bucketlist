@@ -11,9 +11,16 @@
 
 <div>
     <p>Add User</p>
-    <input type="text" placeholder="Username" id="AddUserNameText">
-    <input type="submit" value="Add" id="AddUserButton">
 
+    <div class="row">
+        <div class="col-3 col-sm-4">
+            <input type="text" placeholder="Username" id="AddUserNameText">
+        </div>
+        <div class="col-9 col-sm-8">
+            <input type="submit" value="Add" id="AddUserButton">
+        </div>
+    </div>
+    
     <div id="UserError" class="hide">
         User existiert nicht
     </div>
@@ -21,12 +28,16 @@
     <div id="UsersInBucketList">
         @foreach (var user in Model.UsersInBucketList)
         {
-            <div name="singleUser" id="@user.Id">
-                <p>@user.Name</p> 
-                @if (user != Model.SignedInUser)
-                { 
-                    <input type="button" value="Remove" name="DeleteButton">
-                }
+            <div class="row" name="singleUser" id="@user.Id">
+                <div class="col-3 col-sm-4">
+                    <p>@user.Name</p>
+                </div>
+                <div class="col-9 col-sm-8">
+                    @if (user != Model.SignedInUser)
+                    {
+                        <input type="button" value="Remove" name="DeleteButton">
+                    }
+                </div>
             </div>
         }
     </div>

@@ -9,37 +9,26 @@ namespace MovieDBTest.Provider
     {
         private string baseUrl = "http://www.omdbapi.com/";
 
-        public Models.MovieModel GetMovieModel(string title)
+        public Models.MovieModel GetMovieModelByTitle(string title)
         {
             //Parameter aus API-Key, Titel und Erscheinungsjahr
             //Fragezeichen am Anfang muss sein
-            string urlParams = "?apikey=cf7659c9&plot=full&type=movie&t=" + title ;
-                        
-            HttpClient client = new HttpClient();
+            string urlParams = "?apikey=" + Const.KeyConst.OmdbApiKey + "&plot=full&type=movie&t=" + title ;
 
-            client.BaseAddress = new Uri(baseUrl);
-
-            HttpResponseMessage httpResponse = client.GetAsync(urlParams).Result;
-
-            //Client disposen (GC undso)
-            client.Dispose();
-
-            if (httpResponse.IsSuccessStatusCode)
-            {
-                var jsonString = httpResponse.Content.ReadAsStringAsync().Result;
-
-                return Newtonsoft.Json.JsonConvert.DeserializeObject<Models.MovieModel>(jsonString);
-            }            
-            
-            return null;
+            return GetMovieModel(urlParams);
         }
 
         public Models.MovieModel GetMovieModelByImdbId(string imdbId)
         {
             //Parameter aus API-Key, Titel und Erscheinungsjahr
             //Fragezeichen am Anfang muss sein
-            string urlParams = "?apikey=cf7659c9&plot=full&type=movie&i=" + imdbId;
+            string urlParams = "?apikey=" + Const.KeyConst.OmdbApiKey + "&plot=full&type=movie&i=" + imdbId;
 
+            return GetMovieModel(urlParams);
+        }
+
+        public Models.MovieModel GetMovieModel(String urlParams)
+        {
             HttpClient client = new HttpClient();
 
             client.BaseAddress = new Uri(baseUrl);

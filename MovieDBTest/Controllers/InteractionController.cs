@@ -36,7 +36,7 @@ namespace MovieDBTest.Controllers
         [HttpGet]
         public PartialViewResult GetNewBucketListMovie(string title)
         {
-            var movieModel = new Provider.MovieDetailProvider().GetMovieModel(title);
+            var movieModel = new Provider.MovieDetailProvider().GetMovieModelByTitle(title);
 
             if(movieModel!= null && movieModel.Title != null)
             {

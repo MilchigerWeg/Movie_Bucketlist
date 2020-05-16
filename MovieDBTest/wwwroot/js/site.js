@@ -73,7 +73,16 @@ var removeUser = function () {
 
 //HTML-String für neuen nutzen in BucketListEditView
 var createUserString = function (userName, userId) {
-    return "<div name=\"singleUser\"  id=\"" + userId + "\"> <p>" + userName + "</p><input type=\"button\" value=\"Remove\" name=\"DeleteButton\"></div> "
+    return `
+    <div class="row" name="singleUser" id="${userId}">
+        <div class="col-3">
+            <p>${userName}</p>
+        </div>
+        <div class="col-9">
+            <input type="button" value="Remove" name="DeleteButton">
+        </div>
+    </div>
+    `;
 }
 
 var getMovieByTitle = function () {
@@ -163,9 +172,21 @@ var getNewCreateModel = function () {
 
 
 $('#SaveButton').click(saveBucketList);
-
-
 $('#AddUserButton').click(getExistingUser);
 $('#AddMovieTitleButton').click(getMovieByTitle);
-$("[name='DeleteButton']").click(removeUser);
+$("[name='DeleteButton']").click(removeMovie);
 $("[name='RemoveMovieButton']").click(removeMovie);
+
+$('#AddUserNameText').keypress(function (e) {
+    if (e.which == 13) {
+        getExistingUser();
+        return false;    //<---- Add this line
+    }
+});
+
+$('#AddMovieTitleText').keypress(function (e) {
+    if (e.which == 13) {
+        getMovieByTitle();
+        return false;    //<---- Add this line
+    }
+});
